@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import unittest
-import re
 
 
 def num_1_image(body):
@@ -55,24 +54,22 @@ def num_3_links(body):
             if nums[-1] < i:
                 nums.append(i)
 
-    # print(nums)
     max_num = max(nums)
-    # print(f"max={max_num}")
     return max_num
 
 
 def num_4_lists(body):
     """Количество списков (ul, ol), не вложенных в другие списки. Например: <ol><li></li></ol>,
     <ul><li><ol><li></li></ol></li></ul> - два не вложенных списка (и один вложенный) """
-    ul_ol_tags = body.findAll(('ul', 'ol'))
+    ul_ol_tags = body.findAll(name=['ul', 'ol'])
     independent_tags = 0
     for tag in ul_ol_tags:
         flag = 0
         try:
-            parents = tag.findParents()
+            parents = tag.find_parents()
             for parent in parents:
-                parent_tag = parent.name
-                if parent_tag == 'ol' or parent_tag == 'ul':# or parent_tag == 'li':
+                parent_tag = str(parent.name)
+                if parent_tag == 'ol' or parent_tag == 'ul' or parent_tag == 'li':
                     flag = 1
             if flag == 0:
                 independent_tags += 1
@@ -90,15 +87,10 @@ def parse(path_to_file):
         headers = num_2_headers(body)
         linkslen = num_3_links(body)
         lists = num_4_lists(body)
-        print([imgs, headers, linkslen, lists], path_to_file)
     return [imgs, headers, linkslen, lists]
 
 
 class TestParse(unittest.TestCase):
-    # def test_parse(self):
-    #     test_cases = (
-    #         ('wiki/608_(number)', [0, 1, 12, 120]),
-    #         ('wiki/Spectrogram', [1, 2, 4, 7]),)
 
     def test_parse(self):
         test_cases = (
@@ -107,7 +99,6 @@ class TestParse(unittest.TestCase):
             ('wiki/Artificial_intelligence', [8, 19, 13, 198]),
             ('wiki/Python_(programming_language)', [2, 5, 17, 41]),
             ('wiki/Social_theory', [0, 8, 12, 10]),
-            ('wiki/608_(number)', [0, 1, 12, 120]),
             ('wiki/Spectrogram', [1, 2, 4, 7]),)
 
         for path, expected in test_cases:
